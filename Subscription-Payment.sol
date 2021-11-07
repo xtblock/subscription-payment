@@ -84,6 +84,7 @@ contract SubscriptionPayment is Ownable {
     );
     
     function setMaxSubscriptionDay(uint maxSubscriptionDay_) external onlyOwner {
+        require(maxSubscriptionDay_ >= _minSubscriptionDay, "Subscription: Can't be less than min subscription time!");
         _maxSubscriptionDay = maxSubscriptionDay_;
         emit SetMaxSubscriptionDay(msg.sender, _maxSubscriptionDay);
     }
@@ -211,6 +212,7 @@ contract SubscriptionPayment is Ownable {
             require(paymentToken().balanceOf(msg.sender) >= numOfDay * getSubscriptionPrice(), "Can't pay subscription fee!");
             paymentToken().safeTransferFrom(msg.sender, beneficiary(), numOfDay * getSubscriptionPrice());
             
+            _userIds.increment();
             uint256 userId = _userIds.current();
             walletUserMap[msg.sender]._userId = userId;
             walletUserMap[msg.sender]._expiryTime = block.timestamp + numOfDay * 86400;
