@@ -80,7 +80,7 @@ contract SubscriptionPayment is Ownable {
     //Declare an Event
     event SetMaxSubscriptionDay(
         address indexed caller,
-        uint indexed newMintPrice
+        uint indexed maxSubscriptionDay
     );
     
     function setMaxSubscriptionDay(uint maxSubscriptionDay_) external onlyOwner {
