@@ -169,7 +169,8 @@ contract SubscriptionPayment is Ownable {
         
         uint256 currentBalance = paymentToken().balanceOf(address(this));
         
-        paymentToken().safeTransferFrom(address(this), beneficiary(), currentBalance);
+        //paymentToken().safeTransferFrom(address(this), beneficiary(), currentBalance);
+        paymentToken(paymentId).safeTransfer(beneficiary(), currentBalance);
         emit WithdrawTokenForPayment(address(this), beneficiary(), currentBalance);
     }
     
