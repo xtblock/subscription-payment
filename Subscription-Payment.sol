@@ -23,6 +23,7 @@ contract SubscriptionPayment is Ownable {
     }
     
     struct UserDataStruct {
+        address _userAddress;
         uint256 _userId;
         uint256 _beginTime;
         uint256 _expiryTime;
@@ -187,6 +188,10 @@ contract SubscriptionPayment is Ownable {
         return idUserMap[userId];
     }
     
+    function getUserIdByAddress(address walletAddress) public view virtual returns (uint256) {
+        return walletUserMap[walletAddress]._userId;
+    }
+    
     function getUserDataById(uint256 userId) public view virtual returns (UserDataStruct memory) {
         return walletUserMap[idUserMap[userId]];
     }
@@ -226,7 +231,7 @@ contract SubscriptionPayment is Ownable {
             }
             
             paymentToken().safeTransferFrom(msg.sender, beneficiary(), numOfDay * getSubscriptionPrice());
-            
+
             walletUserMap[msg.sender]._saleHistory.push(SaleStruct(
                 block.timestamp,
                 getSubscriptionPrice(),
@@ -241,10 +246,11 @@ contract SubscriptionPayment is Ownable {
             
             _userIds.increment();
             uint256 userId = _userIds.current();
+            walletUserMap[msg.sender]._userAddress = msg.sender;
             walletUserMap[msg.sender]._userId = userId;
             walletUserMap[msg.sender]._beginTime = block.timestamp;
             walletUserMap[msg.sender]._expiryTime = block.timestamp + numOfDay * 86400;
-            
+    
             walletUserMap[msg.sender]._saleHistory.push(SaleStruct(
                 block.timestamp,
                 getSubscriptionPrice(),
