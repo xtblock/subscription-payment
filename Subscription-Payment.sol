@@ -15,9 +15,18 @@ contract SubscriptionPayment is Ownable {
     uint private _minSubscriptionDay = 1;
     uint private _maxSubscriptionDay = 30;
     
+    struct SaleStruct {
+        uint256 _paidTime;
+        uint256 _salePrice;
+        address _tokenForPayment;
+        uint numOfDay;
+    }
+    
     struct UserDataStruct {
         uint256 _userId;
+        uint256 _beginTime;
         uint256 _expiryTime;
+        SaleStruct[] _saleHistory;
     }
     
     mapping(address => UserDataStruct) private walletUserMap;
@@ -178,9 +187,14 @@ contract SubscriptionPayment is Ownable {
         return idUserMap[userId];
     }
     
+    function getUserDataById(uint256 userId) public view virtual returns (UserDataStruct memory) {
+        return walletUserMap[idUserMap[userId]];
+    }
+    
     function getUserDataByAddress(address walletAddress) public view virtual returns (UserDataStruct memory) {
         return walletUserMap[walletAddress];
     }
+    
     //Declare an Event
     event ExtendedSubscription(
         address indexed caller,
@@ -212,6 +226,13 @@ contract SubscriptionPayment is Ownable {
             }
             
             paymentToken().safeTransferFrom(msg.sender, beneficiary(), numOfDay * getSubscriptionPrice());
+            
+            walletUserMap[msg.sender]._saleHistory.push(SaleStruct(
+                block.timestamp,
+                getSubscriptionPrice(),
+                address(paymentToken()),
+                numOfDay
+            ));
         }
         else{
             require(numOfDay >= _minSubscriptionDay && numOfDay <= _maxSubscriptionDay, "Subscription: Can't be out of min and max subscription time!");
@@ -221,7 +242,15 @@ contract SubscriptionPayment is Ownable {
             _userIds.increment();
             uint256 userId = _userIds.current();
             walletUserMap[msg.sender]._userId = userId;
+            walletUserMap[msg.sender]._beginTime = block.timestamp;
             walletUserMap[msg.sender]._expiryTime = block.timestamp + numOfDay * 86400;
+            
+            walletUserMap[msg.sender]._saleHistory.push(SaleStruct(
+                block.timestamp,
+                getSubscriptionPrice(),
+                address(paymentToken()),
+                numOfDay
+            ));
             
             idUserMap[userId] = msg.sender;
         }
