@@ -203,9 +203,14 @@ contract SubscriptionPayment is Ownable {
             }
             
             require(paymentToken().balanceOf(msg.sender) >= numOfDay * getSubscriptionPrice(), "Can't pay subscription fee!");
-            paymentToken().safeTransferFrom(msg.sender, beneficiary(), numOfDay * getSubscriptionPrice());
             
-            walletUserMap[msg.sender]._expiryTime = block.timestamp + numOfDay * 86400;
+            if(walletUserMap[msg.sender]._expiryTime < block.timestamp){
+                walletUserMap[msg.sender]._expiryTime = block.timestamp + numOfDay * 86400;
+            }else{
+                walletUserMap[msg.sender]._expiryTime = walletUserMap[msg.sender]._expiryTime + numOfDay * 86400;
+            }
+            
+            paymentToken().safeTransferFrom(msg.sender, beneficiary(), numOfDay * getSubscriptionPrice());
         }
         else{
             require(numOfDay >= _minSubscriptionDay && numOfDay <= _maxSubscriptionDay, "Subscription: Can't be out of min and max subscription time!");
