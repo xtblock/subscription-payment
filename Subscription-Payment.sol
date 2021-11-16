@@ -222,6 +222,8 @@ contract SubscriptionPayment is Ownable {
             uint256 userId = _userIds.current();
             walletUserMap[msg.sender]._userId = userId;
             walletUserMap[msg.sender]._expiryTime = block.timestamp + numOfDay * 86400;
+            
+            idUserMap[userId] = msg.sender;
         }
         
         //Emit an event
