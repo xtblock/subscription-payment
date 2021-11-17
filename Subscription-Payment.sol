@@ -184,6 +184,14 @@ contract SubscriptionPayment is Ownable {
         emit WithdrawTokenForPayment(address(this), beneficiary(), currentBalance);
     }
     
+    function getUserExpiryTimeById(uint256 userId) public view virtual returns (uint256) {
+        return walletUserMap[idUserMap[userId]]._expiryTime;
+    }
+    
+    function getUserExpiryTimeByAddress(address walletAddress) public view virtual returns (uint256) {
+        return walletUserMap[walletAddress]._expiryTime;
+    }
+    
     function getUserAddressById(uint256 userId) public view virtual returns (address) {
         return idUserMap[userId];
     }
