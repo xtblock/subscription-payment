@@ -12,7 +12,7 @@ contract SubscriptionPayment is Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _userIds;
     
-    uint private _minSubscriptionDay = 1;
+    uint private constant  _minSubscriptionDay = 1;
     uint private _maxSubscriptionDay = 30;
     
     struct SaleStruct {
@@ -46,7 +46,7 @@ contract SubscriptionPayment is Ownable {
     
     address private _worker;
     
-    uint256 private subscriptionPrice = 24000000000000000000;//24 * 10^18 tokens per day
+    uint256 private subscriptionPrice = 24e18;//24 * 10^18 tokens per day
     
     constructor (IERC20 token_) {
          _tokenForPayment = token_;
@@ -82,7 +82,7 @@ contract SubscriptionPayment is Ownable {
         return _activeTime;
     }
 
-    function getMaxSubscriptionTime() public view returns (uint256)
+    function getMaxSubscriptionTime() external view returns (uint256)
     {
         return _maxSubscriptionDay;
     }
@@ -139,7 +139,7 @@ contract SubscriptionPayment is Ownable {
         return subscriptionPrice;
     }
     
-    function getCurrentUserId() public view virtual returns (uint256) {
+    function getCurrentUserId() external view virtual returns (uint256) {
         return  _userIds.current();
     }
     /**
@@ -161,7 +161,7 @@ contract SubscriptionPayment is Ownable {
         emit SetTokenForPayment(msg.sender, token_);
     }
     
-    function balanceTokenForPayment() public view virtual returns (uint256) {
+    function balanceTokenForPayment() external view virtual returns (uint256) {
         return paymentToken().balanceOf(address(this));
     }
     
@@ -184,27 +184,27 @@ contract SubscriptionPayment is Ownable {
         emit WithdrawTokenForPayment(address(this), beneficiary(), currentBalance);
     }
     
-    function getUserExpiryTimeById(uint256 userId) public view virtual returns (uint256) {
+    function getUserExpiryTimeById(uint256 userId) external view virtual returns (uint256) {
         return walletUserMap[idUserMap[userId]]._expiryTime;
     }
     
-    function getUserExpiryTimeByAddress(address walletAddress) public view virtual returns (uint256) {
+    function getUserExpiryTimeByAddress(address walletAddress) external view virtual returns (uint256) {
         return walletUserMap[walletAddress]._expiryTime;
     }
     
-    function getUserAddressById(uint256 userId) public view virtual returns (address) {
+    function getUserAddressById(uint256 userId) external view virtual returns (address) {
         return idUserMap[userId];
     }
     
-    function getUserIdByAddress(address walletAddress) public view virtual returns (uint256) {
+    function getUserIdByAddress(address walletAddress) external view virtual returns (uint256) {
         return walletUserMap[walletAddress]._userId;
     }
     
-    function getUserDataById(uint256 userId) public view virtual returns (UserDataStruct memory) {
+    function getUserDataById(uint256 userId) external view virtual returns (UserDataStruct memory) {
         return walletUserMap[idUserMap[userId]];
     }
     
-    function getUserDataByAddress(address walletAddress) public view virtual returns (UserDataStruct memory) {
+    function getUserDataByAddress(address walletAddress) external view virtual returns (UserDataStruct memory) {
         return walletUserMap[walletAddress];
     }
     
@@ -215,7 +215,7 @@ contract SubscriptionPayment is Ownable {
     );
     
     function extendSubscription(uint numOfDay)
-        public 
+        external 
     {
         require(
             block.timestamp > getActiveTime(),
