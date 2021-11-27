@@ -39,6 +39,12 @@ contract SubscriptionPayment is Ownable {
     // ERC20 basic payment token contracts being held
     IERC20 private _tokenForPayment;
     
+    struct SaleStatsStruct {
+        mapping(address => uint256) _totalSalePerPaymentToken;
+    }
+
+    SaleStatsStruct private saleStats;
+
     // beneficiary of payment
     address private _newBeneficiary;
     address private _beneficiary;
@@ -208,6 +214,11 @@ contract SubscriptionPayment is Ownable {
         return walletUserMap[walletAddress];
     }
     
+    function getSaleStatsPerToken(IERC20 tokenPaymentAddress) external view returns (uint256)
+    {
+        return saleStats._totalSalePerPaymentToken[address(tokenPaymentAddress)];
+    }
+
     //Declare an Event
     event ExtendedSubscription(
         address indexed caller,
@@ -239,6 +250,7 @@ contract SubscriptionPayment is Ownable {
             }
             
             paymentToken().safeTransferFrom(msg.sender, beneficiary(), numOfDay * getSubscriptionPrice());
+            saleStats._totalSalePerPaymentToken[address(_tokenForPayment)] += numOfDay * getSubscriptionPrice();
 
             walletUserMap[msg.sender]._saleHistory.push(SaleStruct(
                 block.timestamp,
@@ -251,7 +263,8 @@ contract SubscriptionPayment is Ownable {
             require(numOfDay >= _minSubscriptionDay && numOfDay <= _maxSubscriptionDay, "Subscription: Can't be out of min and max subscription time!");
             require(paymentToken().balanceOf(msg.sender) >= numOfDay * getSubscriptionPrice(), "Can't pay subscription fee!");
             paymentToken().safeTransferFrom(msg.sender, beneficiary(), numOfDay * getSubscriptionPrice());
-            
+            saleStats._totalSalePerPaymentToken[address(_tokenForPayment)] += numOfDay * getSubscriptionPrice();
+
             _userIds.increment();
             uint256 userId = _userIds.current();
             walletUserMap[msg.sender]._userAddress = msg.sender;
