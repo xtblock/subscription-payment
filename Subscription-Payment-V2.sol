@@ -48,6 +48,7 @@ contract SubscriptionPayment is Ownable {
     address private _worker;
     
     uint256 private subscriptionPrice = 24e18;//24 * 10^18 tokens per day
+    uint256 private burnRate = 1e18;//1% setable
     
     constructor (IERC20 token_) {
          _tokenForPayment = token_;
@@ -128,7 +129,7 @@ contract SubscriptionPayment is Ownable {
     //Declare an Event
     event SetSubscriptionPrice(
         address indexed caller,
-        uint indexed newSubscriptionPrice
+        uint256 indexed newSubscriptionPrice
     );
     
     function setSubscriptionPrice(uint256 newSubscriptionPrice) external onlyOwner {
@@ -239,7 +240,9 @@ contract SubscriptionPayment is Ownable {
                 walletUserMap[msg.sender]._expiryTime = walletUserMap[msg.sender]._expiryTime + numOfDay * 86400;
             }
             
-            paymentToken().safeTransferFrom(msg.sender, beneficiary(), numOfDay * getSubscriptionPrice());
+            //paymentToken().safeTransferFrom(msg.sender, beneficiary(), numOfDay * getSubscriptionPrice());
+            paymentToken().safeTransferFrom(msg.sender, beneficiary(), (1e20 - burnRate ) * numOfDay * getSubscriptionPrice() / 1e20);
+            paymentToken().safeTransferFrom(msg.sender, address(0), burnRate * numOfDay * getSubscriptionPrice()/ 1e20);
 
             walletUserMap[msg.sender]._saleHistory.push(SaleStruct(
                 block.timestamp,
@@ -251,7 +254,10 @@ contract SubscriptionPayment is Ownable {
         else{
             require(numOfDay >= _minSubscriptionDay && numOfDay <= _maxSubscriptionDay, "Subscription: Can't be out of min and max subscription time!");
             require(paymentToken().balanceOf(msg.sender) >= numOfDay * getSubscriptionPrice(), "Can't pay subscription fee!");
-            paymentToken().safeTransferFrom(msg.sender, beneficiary(), numOfDay * getSubscriptionPrice());
+            
+            //paymentToken().safeTransferFrom(msg.sender, beneficiary(), numOfDay * getSubscriptionPrice());
+            paymentToken().safeTransferFrom(msg.sender, beneficiary(), (1e20 - burnRate ) * numOfDay * getSubscriptionPrice() / 1e20);
+            paymentToken().safeTransferFrom(msg.sender, address(0), burnRate * numOfDay * getSubscriptionPrice()/ 1e20);
             
             _userIds.increment();
             uint256 userId = _userIds.current();
@@ -291,5 +297,20 @@ contract SubscriptionPayment is Ownable {
     function getProfileURI() external view returns (string memory)
     {   
         return walletUserMap[msg.sender]._profileURI;
+    }
+
+    //Declare an Event
+    event SetBurnRate(
+        address indexed caller,
+        uint256 indexed burnRate
+    );
+    
+    function setBurnRate(uint256 burnRate_) external onlyOwner {
+        burnRate = burnRate_;
+        emit SetBurnRate(msg.sender, burnRate_);
+    }
+    
+    function getBurnRate() public view virtual returns (uint256) {
+        return burnRate;
     }
 }
