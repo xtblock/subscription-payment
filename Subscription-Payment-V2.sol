@@ -288,7 +288,7 @@ contract SubscriptionPayment is Ownable {
     
     function setProfileURI(string memory profileURI_) external
     {        
-        require(bytes(profileURI_).length > 0, "profileURI: Can't be blank!");
+        //require(bytes(profileURI_).length > 0, "profileURI: Can't be blank!");
         walletUserMap[msg.sender]._profileURI = profileURI_;
         
         emit SetProfileURI(msg.sender, profileURI_);
