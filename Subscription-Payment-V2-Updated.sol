@@ -254,7 +254,8 @@ contract SubscriptionPayment is Ownable {
         if(_beneficiary != _newBeneficiary && block.timestamp > _beneficiaryActiveTime) _beneficiary = _newBeneficiary;
         
         if(walletUserMap[msg.sender]._userId != 0){
-            uint subscriptionTimeLeft = (walletUserMap[msg.sender]._expiryTime - block.timestamp) / 86400;
+            //uint subscriptionTimeLeft = (walletUserMap[msg.sender]._expiryTime - block.timestamp) / 86400;
+            uint subscriptionTimeLeft = walletUserMap[msg.sender]._expiryTime/86400 - block.timestamp/ 86400;
             if(subscriptionTimeLeft > 0){
                 require(numOfDay >= _minSubscriptionDay && (numOfDay + subscriptionTimeLeft) <= _maxSubscriptionDay, "Subscription: Can't be out of min and max subscription time!");
             }
