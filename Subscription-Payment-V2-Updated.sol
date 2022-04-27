@@ -16,6 +16,7 @@ contract SubscriptionPayment is Ownable {
     uint private _maxSubscriptionDay = 30;
     
     struct SaleStruct {
+        address _payer;
         uint256 _paidTime;
         uint256 _salePrice;
         address _tokenForPayment;
@@ -243,7 +244,7 @@ contract SubscriptionPayment is Ownable {
         uint256 indexed newExpiryTime
     );
     
-    function extendSubscription(uint numOfDay)
+    function extendSubscription(uint numOfDay, address walletAddress)
         external 
     {
         require(
@@ -253,19 +254,20 @@ contract SubscriptionPayment is Ownable {
         
         if(_beneficiary != _newBeneficiary && block.timestamp > _beneficiaryActiveTime) _beneficiary = _newBeneficiary;
         
-        if(walletUserMap[msg.sender]._userId != 0){
+        //if(walletUserMap[msg.sender]._userId != 0){
+        if(walletUserMap[walletAddress]._userId != 0){
             //uint subscriptionTimeLeft = (walletUserMap[msg.sender]._expiryTime - block.timestamp) / 86400;
-            uint subscriptionTimeLeft = walletUserMap[msg.sender]._expiryTime/86400 - block.timestamp/ 86400;
+            uint subscriptionTimeLeft = walletUserMap[walletAddress]._expiryTime/86400 - block.timestamp/ 86400;
             if(subscriptionTimeLeft > 0){
                 require(numOfDay >= _minSubscriptionDay && (numOfDay + subscriptionTimeLeft) <= _maxSubscriptionDay, "Subscription: Can't be out of min and max subscription time!");
             }
             
             require(paymentToken().balanceOf(msg.sender) >= numOfDay * getSubscriptionPrice(), "Can't pay subscription fee!");
             
-            if(walletUserMap[msg.sender]._expiryTime < block.timestamp){
-                walletUserMap[msg.sender]._expiryTime = block.timestamp + numOfDay * 86400;
+            if(walletUserMap[walletAddress]._expiryTime < block.timestamp){
+                walletUserMap[walletAddress]._expiryTime = block.timestamp + numOfDay * 86400;
             }else{
-                walletUserMap[msg.sender]._expiryTime = walletUserMap[msg.sender]._expiryTime + numOfDay * 86400;
+                walletUserMap[walletAddress]._expiryTime = walletUserMap[walletAddress]._expiryTime + numOfDay * 86400;
             }
             
             //paymentToken().safeTransferFrom(msg.sender, beneficiary(), numOfDay * getSubscriptionPrice());
@@ -273,7 +275,8 @@ contract SubscriptionPayment is Ownable {
             //paymentToken().safeTransferFrom(msg.sender, address(0), burnRate * numOfDay * getSubscriptionPrice()/ 1e20);
             paymentToken().safeTransferFrom(msg.sender, _foreverLocker, burnRate * numOfDay * getSubscriptionPrice()/ 1e20);
 
-            walletUserMap[msg.sender]._saleHistory.push(SaleStruct(
+            walletUserMap[walletAddress]._saleHistory.push(SaleStruct(
+                msg.sender,
                 block.timestamp,
                 getSubscriptionPrice(),
                 address(paymentToken()),
@@ -291,23 +294,24 @@ contract SubscriptionPayment is Ownable {
             
             _userIds.increment();
             uint256 userId = _userIds.current();
-            walletUserMap[msg.sender]._userAddress = msg.sender;
-            walletUserMap[msg.sender]._userId = userId;
-            walletUserMap[msg.sender]._beginTime = block.timestamp;
-            walletUserMap[msg.sender]._expiryTime = block.timestamp + numOfDay * 86400;
+            walletUserMap[walletAddress]._userAddress = walletAddress;
+            walletUserMap[walletAddress]._userId = userId;
+            walletUserMap[walletAddress]._beginTime = block.timestamp;
+            walletUserMap[walletAddress]._expiryTime = block.timestamp + numOfDay * 86400;
     
-            walletUserMap[msg.sender]._saleHistory.push(SaleStruct(
+            walletUserMap[walletAddress]._saleHistory.push(SaleStruct(
+                msg.sender,
                 block.timestamp,
                 getSubscriptionPrice(),
                 address(paymentToken()),
                 numOfDay
             ));
             
-            idUserMap[userId] = msg.sender;
+            idUserMap[userId] = walletAddress;
         }
         
         //Emit an event
-        emit ExtendedSubscription(msg.sender, walletUserMap[msg.sender]._expiryTime);
+        emit ExtendedSubscription(walletAddress, walletUserMap[walletAddress]._expiryTime);
     }
 
     //Declare an Event
