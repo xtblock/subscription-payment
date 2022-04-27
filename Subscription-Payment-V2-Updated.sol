@@ -254,6 +254,9 @@ contract SubscriptionPayment is Ownable {
         
         if(_beneficiary != _newBeneficiary && block.timestamp > _beneficiaryActiveTime) _beneficiary = _newBeneficiary;
         
+        if(walletAddress==address(0){
+            walletAddress = msg.sender;
+        }// check if the address is not set)
         //if(walletUserMap[msg.sender]._userId != 0){
         if(walletUserMap[walletAddress]._userId != 0){
             //uint subscriptionTimeLeft = (walletUserMap[msg.sender]._expiryTime - block.timestamp) / 86400;
