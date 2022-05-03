@@ -21,6 +21,7 @@ contract SubscriptionPayment is Ownable {
         uint256 _salePrice;
         address _tokenForPayment;
         uint numOfDay;
+        string _profileURI;
     }
     
     struct UserDataStruct {
@@ -283,7 +284,8 @@ contract SubscriptionPayment is Ownable {
                 block.timestamp,
                 getSubscriptionPrice(),
                 address(paymentToken()),
-                numOfDay
+                numOfDay,
+                walletUserMap[walletAddress]._profileURI
             ));
         }
         else{
@@ -307,7 +309,8 @@ contract SubscriptionPayment is Ownable {
                 block.timestamp,
                 getSubscriptionPrice(),
                 address(paymentToken()),
-                numOfDay
+                numOfDay,
+                walletUserMap[walletAddress]._profileURI
             ));
             
             idUserMap[userId] = walletAddress;
