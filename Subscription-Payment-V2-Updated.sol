@@ -52,7 +52,7 @@ contract SubscriptionPayment is Ownable {
     // forever locker address
     address private _foreverLocker;
     
-    uint256 private subscriptionPrice = 24e18;//24 * 10^18 tokens per day
+    uint256 private subscriptionPrice = 24e18;//24 tokens per day
     uint256 private burnRate = 1e18;//1% setable
     
     constructor (IERC20 token_) {
@@ -261,7 +261,10 @@ contract SubscriptionPayment is Ownable {
         //if(walletUserMap[msg.sender]._userId != 0){
         if(walletUserMap[walletAddress]._userId != 0){
             //uint subscriptionTimeLeft = (walletUserMap[msg.sender]._expiryTime - block.timestamp) / 86400;
-            uint subscriptionTimeLeft = walletUserMap[walletAddress]._expiryTime/86400 - block.timestamp/ 86400;
+            uint subscriptionTimeLeft = 0;
+
+            if(walletUserMap[walletAddress]._expiryTime/86400 - block.timestamp/ 86400 > 0) subscriptionTimeLeft = walletUserMap[walletAddress]._expiryTime/86400 - block.timestamp/ 86400;
+
             if(subscriptionTimeLeft > 0){
                 require(numOfDay >= _minSubscriptionDay && (numOfDay + subscriptionTimeLeft) <= _maxSubscriptionDay, "Subscription: Can't be out of min and max subscription time!");
             }
